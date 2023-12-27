@@ -19,16 +19,37 @@ namespace TelegramBot
         static string LName = String.Empty;
         static MobileCountryModel? mobileCountryModel;
         static string responseText = String.Empty;
-        public static async Task ListTasks(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public static async Task SelectTasksType(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             UpdateModel.GetUpdateModel(update);
             chatId = UpdateModel.ChatId;
-
-            var btn = InlineKeyboardButton.WithCallbackData("a","b");
-            var mrkup = new InlineKeyboardMarkup(btn);
+            List<InlineKeyboardButton> btns = new();
+            btns.Add(InlineKeyboardButton.WithCallbackData("New Tasks", "NewTasks"));
+            btns.Add(InlineKeyboardButton.WithCallbackData("Doing Tasks", "Doing Tasks"));
+            var mrkup = new InlineKeyboardMarkup(btns);
             Message sentMessage = await botClient.SendTextMessageAsync(
                 chatId: chatId,
-                text: "لطفا شماره موبایل خود را ارسال بفرمائید",
+                text: "لطفا انتخاب نمایید",
+                parseMode: ParseMode.MarkdownV2,
+                disableNotification: true,
+                replyToMessageId: update.Message!.MessageId,
+                replyMarkup: mrkup,
+                cancellationToken: cancellationToken
+            );
+        }
+        public static async Task ShowTasksList(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
+            UpdateModel.GetUpdateModel(update);
+            chatId = UpdateModel.ChatId;
+            List<InlineKeyboardButton> btns = new()
+            {
+                InlineKeyboardButton.WithCallbackData("New Tasks", "NewTasks"),
+                InlineKeyboardButton.WithCallbackData("Doing Tasks", "DoingTasks")
+            };
+            var mrkup = new InlineKeyboardMarkup(btns);
+            Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: "لطفا انتخاب نمایید",
                 parseMode: ParseMode.MarkdownV2,
                 disableNotification: true,
                 replyToMessageId: update.Message!.MessageId,
@@ -37,5 +58,11 @@ namespace TelegramBot
             );
         }
 
+        internal static Task SelectNewTasks(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
+            UpdateModel.GetUpdateModel(update);
+            chatId = UpdateModel.ChatId;
+            RepositoryTasks.GetTasks(chatId,1);
+        }
     }
 }

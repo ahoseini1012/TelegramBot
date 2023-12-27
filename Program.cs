@@ -65,14 +65,24 @@ namespace TelegramBot
                                 await PrepareKycRespons.UpdateNames(botClient, update, cancellationToken, 3);
                                 break;
                             default:
-                                await PrepareTasksRespons.ListTasks(botClient, update, cancellationToken);
+                                await PrepareTasksRespons.SelectTasksType(botClient, update, cancellationToken);
                                 break;
                         }
                     }
-                    else if(update.CallbackQuery != null )
+                    else if (update.CallbackQuery != null)
                     {
                         // Task
-                        await PrepareTasksRespons.ListTasks(botClient, update, cancellationToken);
+                        switch (update.CallbackQuery.Data)
+                        {
+                            case "NewTasks":
+                                await PrepareTasksRespons.SelectNewTasks(botClient, update, cancellationToken);
+                                break;
+                            case "DoingTasks":
+                                break;
+                            default:
+                                break;
+                        }
+                        await PrepareTasksRespons.SelectTasksType(botClient, update, cancellationToken);
                     }
 
 

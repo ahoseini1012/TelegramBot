@@ -28,7 +28,7 @@ namespace TelegramBot
             if (contact != null)
             {
                 mobileCountryModel = checkMobileNumber.GetCountryByPhoneNumber(contact.PhoneNumber);
-                var model = await Repository.InsertUser(new MyBotUser
+                var model = await RepositoryKyc.InsertUser(new MyBotUser
                 {
                     chatId = chatId,
                     PhoneNumber = mobileCountryModel.MobileNumber,
@@ -82,7 +82,7 @@ namespace TelegramBot
                 LName = UpdateModel.MessageText;
             }
 
-            var model = await Repository.UpdateUser(new MyBotUser { chatId = chatId, FName = FName, LName = LName });
+            var model = await RepositoryKyc.UpdateUser(new MyBotUser { chatId = chatId, FName = FName, LName = LName });
             if (updateType == 2)
             {
                 responseText = $@"لطفا نام خانوادگی خود را وارد فرمائید";

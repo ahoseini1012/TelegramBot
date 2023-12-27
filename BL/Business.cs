@@ -11,7 +11,7 @@ namespace TelegramBot.BL
     {
         public static async Task<int> KycState(long chatId)
         {
-            var dbResult = await Repository.UsersGetOne(chatId);
+            var dbResult = await RepositoryKyc.UsersGetOne(chatId);
             if (dbResult.Any())
             {
                 if (String.IsNullOrEmpty(dbResult.FirstOrDefault()!.PhoneNumber))

@@ -8,7 +8,7 @@ using TelegramBot.Models;
 
 namespace TelegramBot.DL
 {
-    public static class Repository
+    public static class RepositoryKyc
     {
         public static async Task<List<MyBotUser>> UsersGetOne(long chatId)
         {
