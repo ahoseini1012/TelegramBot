@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Requests;
 using Telegram.Bot.Exceptions;
@@ -6,88 +6,107 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-internal class Program
+using Microsoft.Extensions.Configuration;
+using TelegramBot.BL;
+using TelegramBot.Models;
+namespace TelegramBot
 {
-    private static void Main(string[] args)
+
+    internal class Program
     {
-        var botClient = new TelegramBotClient("6770926735:AAER5GcpMAQ_ww-HHYPzC_efnSQEoPYVhZI");
-        using CancellationTokenSource cts = new();
-
-        // StartReceiving does not block the caller thread. Receiving is done on the ThreadPool.
-        ReceiverOptions receiverOptions = new()
+        private static void Main(string[] args)
         {
-            AllowedUpdates = Array.Empty<UpdateType>() // receive all update types except ChatMember related updates
-        };
+            var configuration = new ConfigurationBuilder()
+                 .AddJsonFile($"appsettings.json");
 
-        botClient.StartReceiving(
-            updateHandler: HandleUpdateAsync,
-            pollingErrorHandler: HandlePollingErrorAsync,
-            receiverOptions: receiverOptions,
-            cancellationToken: cts.Token
-        );
+            var config = configuration.Build();
+            var connectionString = config.GetSection("DB:ConnectionString");
+            var Client = config.GetSection("botClient");
+            var botClient = new TelegramBotClient(Client.Value!);
 
-        async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            // Only process Message updates: https://core.telegram.org/bots/api#message
-            if (update.Message is not { } message)
-                return;
-            // Only process text messages
-            if (message.Text is not { } messageText)
-                return;
 
-            var chatId = message.Chat.Id;
 
-            Console.WriteLine($"Received a '{messageText}' message in chat {chatId}.");
+            using CancellationTokenSource cts = new();
 
-            // Echo received message text
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-            text: "Trying *all the parameters* of `sendMessage` method",
-            parseMode: ParseMode.MarkdownV2,
-            disableNotification: true,
-            replyToMessageId: update.Message.MessageId,
-            replyMarkup: new InlineKeyboardMarkup(
-                InlineKeyboardButton.WithUrl(
-                    text: "Check sendMessage method",
-                    url: "https://core.telegram.org/bots/api#sendmessage")),
-            cancellationToken: cancellationToken);
-        }
-
-        Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
-        {
-            var ErrorMessage = exception switch
+            // StartReceiving does not block the caller thread. Receiving is done on the ThreadPool.
+            ReceiverOptions receiverOptions = new()
             {
-                ApiRequestException apiRequestException
-                    => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
-                _ => exception.ToString()
+                AllowedUpdates = Array.Empty<UpdateType>() // receive all update types except ChatMember related updates
             };
 
-            Console.WriteLine(ErrorMessage);
-            return Task.CompletedTask;
+            botClient.StartReceiving(
+                updateHandler: HandleUpdateAsync,
+                pollingErrorHandler: HandlePollingErrorAsync,
+                receiverOptions: receiverOptions,
+                cancellationToken: cts.Token
+            );
+            System.Console.ReadLine();
+
+            async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+            {
+                try
+                {
+                    // Only process Message updates: https://core.telegram.org/bots/api#message
+                    if (update.Message != null)
+                    {
+                        // KYC                
+                        long chatId = update.Message.Chat.Id;
+                        int KycState = await Business.KycState(chatId);
+                        switch (KycState)
+                        {
+                            case 1:
+                            case -1:
+                                await PrepareKycRespons.GetPhoneNumber(botClient, update, cancellationToken);
+                                break;
+                            case 2:
+                                await PrepareKycRespons.UpdateNames(botClient, update, cancellationToken, 2);
+                                break;
+                            case 3:
+                                await PrepareKycRespons.UpdateNames(botClient, update, cancellationToken, 3);
+                                break;
+                            default:
+                                await PrepareTasksRespons.ListTasks(botClient, update, cancellationToken);
+                                break;
+                        }
+                    }
+                    else if(update.CallbackQuery != null )
+                    {
+                        // Task
+                        await PrepareTasksRespons.ListTasks(botClient, update, cancellationToken);
+                    }
+
+
+
+
+                }
+                catch (System.Exception exception)
+                {
+                    var ErrorMessage = exception switch
+                    {
+                        ApiRequestException apiRequestException
+                            => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                        _ => exception.ToString()
+                    };
+
+                    Console.WriteLine(ErrorMessage);
+                }
+
+            }
+
+            Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+            {
+                var ErrorMessage = exception switch
+                {
+                    ApiRequestException apiRequestException
+                        => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                    _ => exception.ToString()
+                };
+
+                Console.WriteLine(ErrorMessage);
+                return Task.CompletedTask;
+            }
+
+
         }
-
-
-        var builder = WebApplication.CreateBuilder(args);
-
-        // Add services to the container.
-
-        builder.Services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-
-        var app = builder.Build();
-
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
-        app.MapControllers();
-        app.Run();
     }
 }
