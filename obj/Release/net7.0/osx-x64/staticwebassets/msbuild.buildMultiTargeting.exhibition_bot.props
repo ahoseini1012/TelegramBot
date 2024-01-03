@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\exhibition_bot.props" />
+</Project>
