@@ -5,11 +5,11 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using TelegramBot.DL;
-using TelegramBot.Models;
-using TelegramBot.Helpers;
+using exhibition_bot.DL;
+using exhibition_bot.Models;
+using exhibition_bot.Helpers;
 
-namespace TelegramBot
+namespace exhibition_bot
 {
     public static class PrepareKycRespons
     {
@@ -19,6 +19,7 @@ namespace TelegramBot
         static string LName = String.Empty;
         static MobileCountryModel? mobileCountryModel;
         static string responseText = String.Empty;
+
         public static async Task GetPhoneNumber(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             UpdateModel.GetUpdateModel(update);
@@ -27,8 +28,8 @@ namespace TelegramBot
 
             if (contact != null)
             {
-                mobileCountryModel = checkMobileNumber.GetCountryByPhoneNumber(contact.PhoneNumber);
-                var model = await RepositoryKyc.InsertUser(new MyBotUser
+                mobileCountryModel = CheckMobileNumber.GetCountryByPhoneNumber(contact.PhoneNumber);
+                var model = await AuthRepository.InsertUser(new MyBotUser
                 {
                     chatId = chatId,
                     PhoneNumber = mobileCountryModel.MobileNumber,
@@ -38,7 +39,15 @@ namespace TelegramBot
                 {
                     Message sentMessage = await botClient.SendTextMessageAsync(
                         chatId: chatId,
-                        text: $@"لطفا نام خود را وارد فرمائید",
+                        text: $@"
+لطفا نام خود را وارد فرمائید:
+
+
+شماره موبایل: {model.PhoneNumber}
+نام: {model.FName} 
+نام خانوادگی: {model.LName} 
+کشور: {model.Country}
+",
                         parseMode: ParseMode.MarkdownV2,
                         disableNotification: true,
                         replyToMessageId: update.Message!.MessageId,
@@ -57,7 +66,9 @@ namespace TelegramBot
                 var mrkup = new ReplyKeyboardMarkup(btn);
                 Message sentMessage = await botClient.SendTextMessageAsync(
                     chatId: chatId,
-                    text: "لطفا شماره موبایل خود را ارسال بفرمائید",
+                    text: $@"
+به دهمین نمایشگاه نهاده های کشاورزیAgricaltech
+                    لطفا بازدن روی دگمه پایین شماره موبایل خود را ارسال بفرمائید",
                     parseMode: ParseMode.MarkdownV2,
                     disableNotification: true,
                     replyToMessageId: update.Message!.MessageId,
@@ -82,19 +93,30 @@ namespace TelegramBot
                 LName = UpdateModel.MessageText;
             }
 
-            var model = await RepositoryKyc.UpdateUser(new MyBotUser { chatId = chatId, FName = FName, LName = LName });
+            var model = await AuthRepository.UpdateUser(new MyBotUser { chatId = chatId, FName = FName, LName = LName });
             if (updateType == 2)
             {
-                responseText = $@"لطفا نام خانوادگی خود را وارد فرمائید";
+                responseText = $@"
+لطفا نام خانوادگی خود را وارد فرمائید
+
+شماره موبایل: {model.PhoneNumber}
+نام: {model.FName} 
+نام خانوادگی: {model.LName} 
+کشور: {model.Country}
+";
             }
             if (updateType == 3)
             {
-                responseText = $@"فرآیند ثبت نام شما باموفقیت یه پایان رسید
-                نام: {model.FName} 
-                نام خانوادگی: {model.LName} 
-                کشور: {model.Country} 
-                ایران: {model.PhoneNumber}";
+                responseText = $@"فرآیند ثبت نام شما باموفقیت به پایان رسید
+
+                
+شماره موبایل: {model.PhoneNumber}
+نام: {model.FName} 
+نام خانوادگی: {model.LName} 
+کشور: {model.Country} 
+                ";
             }
+            await AsnaRepository.RegisterUser(model.PhoneNumber,model.FName,model.LName,model.Country);
             Message sentMessage = await botClient.SendTextMessageAsync(
                 chatId: chatId,
                 text: responseText,

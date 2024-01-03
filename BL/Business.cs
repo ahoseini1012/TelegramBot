@@ -2,22 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TelegramBot.DL;
-using TelegramBot.Models;
+using exhibition_bot.DL;
+using exhibition_bot.Models;
 
-namespace TelegramBot.BL
+namespace exhibition_bot.BL
 {
-    public static class Business
+    public static class KYC
     {
-        public static async Task<int> KycState(long chatId)
+        public static async Task<int> State(long chatId)
         {
-            var dbResult = await RepositoryKyc.UsersGetOne(chatId);
-            if (dbResult.Any())
+            var dbResult = await AuthRepository.UsersGetOne(chatId);
+            if ( dbResult.Any())
             {
-                if (String.IsNullOrEmpty(dbResult.FirstOrDefault()!.PhoneNumber))
-                {
-                    return 1; // PhoneNumber valuee is needed
-                }
                 if (String.IsNullOrEmpty(dbResult.FirstOrDefault()!.FName))
                 {
                     return 2; // FName valuee is needed 
@@ -35,8 +31,9 @@ namespace TelegramBot.BL
                     return 5; // profile is not registered
                 }
             }
+                return 1; // new chatid and PhoneNumber is needed
+            
 
-            return -1; // new chatid
         }
     }
 }

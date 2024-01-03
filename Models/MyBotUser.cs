@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TelegramBot.Models
+namespace exhibition_bot.Models
 {
     public class MyBotUser
     {
@@ -16,5 +16,7 @@ namespace TelegramBot.Models
         public int? CityId { get; set; }
         public bool IsCompleted { get; set; }
         public bool IsRegistered { get; set; }
+        public long RoleId { get; set; }
+        public string RoleName { get; set; }=String.Empty;
     }
 }

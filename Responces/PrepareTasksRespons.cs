@@ -5,11 +5,11 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using TelegramBot.DL;
-using TelegramBot.Models;
-using TelegramBot.Helpers;
+using exhibition_bot.DL;
+using exhibition_bot.Models;
+using exhibition_bot.Helpers;
 
-namespace TelegramBot
+namespace exhibition_bot
 {
     public static class PrepareTasksRespons
     {
@@ -43,7 +43,7 @@ namespace TelegramBot
             chatId = UpdateModel.ChatId;
             List<InlineKeyboardButton> btns = new()
             {
-                InlineKeyboardButton.WithCallbackData("New Tasks", "NewTasks"),
+                InlineKeyboardButton.WithCallbackData("ثبت نام", "NewTasks"),
                 InlineKeyboardButton.WithCallbackData("Doing Tasks", "DoingTasks")
             };
             var mrkup = new InlineKeyboardMarkup(btns);
@@ -58,11 +58,11 @@ namespace TelegramBot
             );
         }
 
-        internal static Task SelectNewTasks(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public static async Task SelectNewTasks(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             UpdateModel.GetUpdateModel(update);
             chatId = UpdateModel.ChatId;
-            RepositoryTasks.GetTasks(chatId,1);
+            await TasksRepository.GetTasks(chatId,1);
         }
     }
 }
