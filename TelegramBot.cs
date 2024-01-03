@@ -65,26 +65,27 @@ namespace exhibition_bot
                                 return;
                         }
 
-                        // if (update.Message.Text!=null && update.Message.Text!.ToLower()== "/start")
-                        // {
-                        //     await PrepareGeneralRespons.StartMenu(botClient, update, cancellationToken);
-                        // }
+                        if (update.Message.Text!=null && update.Message.Text!.ToLower()== "/start")
+                        {
+                            await PrepareGeneralRespons.StartMenu(botClient, update, cancellationToken);
+                            return;
+                        }
                     }
-                    // else if (update.CallbackQuery != null)
-                    // {
-                    //     // Task
-                    //     switch (update.CallbackQuery.Data)
-                    //     {
-                    //         case "NewTasks":
-                    //             await PrepareTasksRespons.SelectNewTasks(botClient, update, cancellationToken);
-                    //             break;
-                    //         case "DoingTasks":
-                    //             break;
-                    //         default:
-                    //             break;
-                    //     }
-                    //     await PrepareTasksRespons.SelectTasksType(botClient, update, cancellationToken);
-                    // }
+                    else if (update.CallbackQuery != null)
+                    {
+                        // Task
+                        switch (update.CallbackQuery.Data)
+                        {
+                            case "NewTasks":
+                                await PrepareTasksRespons.SelectNewTasks(botClient, update, cancellationToken);
+                                break;
+                            case "DoingTasks":
+                                break;
+                            default:
+                                break;
+                        }
+                        await PrepareTasksRespons.SelectTasksType(botClient, update, cancellationToken);
+                    }
 
 
 

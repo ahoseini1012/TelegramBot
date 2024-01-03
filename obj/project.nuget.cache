@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "bdGUV9CcwDyD9+ItaLYHmcN7Uvd3AUA53rFOum7cHT7ChV16u4OkatiCoq1xgLLoa94DmuSI3zq6Ck1vMXm5Ow==",
+  "dgSpecHash": "IkP3SDrjvdJiUcb6mSPvO8v0xaPAX5JUVZtuvC3yuF80NVW0MznCmFLEQpB8f/AMZCawwJibEfVWCEd3/tEFOQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Mohammad\\Desktop\\exhibition_bot\\exhibition_bot.csproj",
+  "projectFilePath": "c:\\Users\\Mohammad\\Desktop\\TelegramBot\\exhibition_bot.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Mohammad\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\Mohammad\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
