@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TelegramBot.Models;
+using Bot.Models;
 
-namespace TelegramBot.Helpers
+namespace Bot.Helpers
 {
-    public class checkMobileNumber
+    public class CheckMobileNumber
     {
         public static MobileCountryModel GetCountryByPhoneNumber(string phoneNumber)
         {
+            if (!phoneNumber.StartsWith('+'))
+            {
+                phoneNumber="+"+phoneNumber;
+            }
             Dictionary<string, string> countryCodes = new Dictionary<string, string>()
             {
                 {"+1","United States (USA)"},

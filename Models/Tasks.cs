@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TelegramBot.Models
+namespace Bot.Models
 {
-    public class Tasks
+    public class TodoTask
     {
         public long Id { get; set; }
         public long ChatId { get; set; }

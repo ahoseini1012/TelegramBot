@@ -5,11 +5,13 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using TelegramBot.DL;
-using TelegramBot.Models;
-using TelegramBot.Helpers;
+using Bot.DL;
+using Bot.Models;
+using Bot.Helpers;
+using MyBot;
+using MyBot.DL;
 
-namespace TelegramBot
+namespace Bot
 {
     public static class PrepareTasksRespons
     {
@@ -43,7 +45,7 @@ namespace TelegramBot
             chatId = UpdateModel.ChatId;
             List<InlineKeyboardButton> btns = new()
             {
-                InlineKeyboardButton.WithCallbackData("New Tasks", "NewTasks"),
+                InlineKeyboardButton.WithCallbackData("ثبت نام", "NewTasks"),
                 InlineKeyboardButton.WithCallbackData("Doing Tasks", "DoingTasks")
             };
             var mrkup = new InlineKeyboardMarkup(btns);
@@ -58,11 +60,55 @@ namespace TelegramBot
             );
         }
 
-        internal static Task SelectNewTasks(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public static async Task SelectNewTasks(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             UpdateModel.GetUpdateModel(update);
             chatId = UpdateModel.ChatId;
-            RepositoryTasks.GetTasks(chatId,1);
+            await TasksRepository.GetOne(chatId, 1);
+        }
+        public static async Task<TodoTask> CreateNewTasks(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, long chatId)
+        {
+            TodoTask todoTask = await TasksRepository.InsertOne(chatId);
+
+            List<List<InlineKeyboardButton>> btns = new()
+            {
+                new List<InlineKeyboardButton>() { InlineKeyboardButton.WithCallbackData("Title", $"{chatId}_{todoTask.Id}_Title") },
+                new List<InlineKeyboardButton>() { InlineKeyboardButton.WithCallbackData("Description", $"{chatId}_{todoTask.Id}_Description") },
+                new List<InlineKeyboardButton>() { InlineKeyboardButton.WithCallbackData("AssginTo", $"{chatId}_{todoTask.Id}_Assgin") },
+                new List<InlineKeyboardButton>() { InlineKeyboardButton.WithCallbackData("Up2Date", $"{chatId}_{todoTask.Id}_Update") }
+            };
+            var mrkup = new InlineKeyboardMarkup(btns);
+
+            Message sentMessage = await botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: $@"تسک جدید ایجاد شد:
+                id: {todoTask.Id}
+                Title: {todoTask.Title}
+                Description: {todoTask.Description}
+                Created At : {todoTask.CreatedAt}
+                MobileNumebt: {todoTask.ChatId}
+                ",
+                parseMode: ParseMode.MarkdownV2,
+                disableNotification: true,
+                replyMarkup: mrkup,
+                cancellationToken: cancellationToken
+                );
+            return todoTask;
+        }
+
+        //ذخیره اکشن و 
+        public static async Task ActionHistory_UpdateTaskTitle(ITelegramBotClient botClient, CancellationToken cancellationToken, Update update, long chatId, long taskId, int data)
+        {
+            var todoTask = await ActionHistoryRepository.InsertOne(chatId, taskId, data);
+            if (todoTask != null)
+            {
+                string txt = $@"لطفا عنوان جدید برای تسک {taskId} وارد نمایید";
+                await SendResponseMessage.Send(botClient, cancellationToken, null, chatId, txt);
+            }
+            else
+            {
+                throw new System.Exception("Error on insert action history - updatetitle");
+            }
         }
     }
 }
